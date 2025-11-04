@@ -162,6 +162,13 @@ cleanup() {
 show_logs() {
     local service=${1:-""}
     if [ -n "$service" ]; then
+        # Verify service exists
+        if ! $DOCKER_COMPOSE_CMD ps "$service" &> /dev/null; then
+            print_error "Service '$service' not found or not running"
+            print_status "Available services:"
+            $DOCKER_COMPOSE_CMD ps --services
+            return 1
+        fi
         print_status "Showing logs for $service..."
         $DOCKER_COMPOSE_CMD logs -f "$service"
     else
