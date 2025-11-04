@@ -61,4 +61,4 @@ EXPOSE 2024
 ENV PORT 2024
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["yarn", "workspace", "@openswe/agent", "dev"]
+CMD ["yarn", "workspace", "@openswe/agent", "start"]
