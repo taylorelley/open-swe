@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Development setup with hot reloading
+  openswe-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"  # Web app
+      - "2024:2024"  # Agent API
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/api
+      - LANGGRAPH_API_URL=http://localhost:2024
+      - OPEN_SWE_APP_URL=http://localhost:3000
+    env_file:
+      - ./apps/web/.env
+      - ./apps/open-swe/.env
+    volumes:
+      # Mount source code for hot reloading
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./package.json:/app/package.json
+      - ./yarn.lock:/app/yarn.lock
+      - ./turbo.json:/app/turbo.json
+      - ./langgraph.json:/app/langgraph.json
+      # Exclude node_modules to avoid conflicts
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/open-swe/node_modules
+      - /app/packages/shared/node_modules
+    networks:
+      - openswe-dev-network
+    restart: unless-stopped
+
+  # Optional: Development database
+  postgres-dev:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: openswe_dev
+      POSTGRES_USER: openswe
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    networks:
+      - openswe-dev-network
+
+  # Optional: Redis for development
+  redis-dev:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - openswe-dev-network
+    volumes:
+      - redis-dev-data:/data
+
+networks:
+  openswe-dev-network:
+    driver: bridge
+
+volumes:
+  postgres-dev-data:
+  redis-dev-data:

@@ -1,0 +1,64 @@
+# Dockerfile for Open SWE LangGraph Agent
+FROM node:20-alpine AS base
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    python3 \
+    py3-pip \
+    build-base \
+    libc6-compat
+
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+COPY .yarnrc.yml ./
+COPY .yarn ./.yarn
+COPY apps/open-swe/package.json ./apps/open-swe/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies
+RUN yarn install --frozen-lockfile
+
+# Build stage
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/.yarn ./.yarn
+COPY . .
+
+# Build the shared package first
+RUN yarn workspace @openswe/shared build
+
+# Build the agent
+RUN yarn workspace @openswe/agent build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 agent
+
+# Copy built application
+COPY --from=builder --chown=agent:nodejs /app/apps/open-swe/dist ./apps/open-swe/dist
+COPY --from=builder --chown=agent:nodejs /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder --chown=agent:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=agent:nodejs /app/package.json ./
+COPY --from=builder --chown=agent:nodejs /app/apps/open-swe/package.json ./apps/open-swe/
+COPY --from=builder --chown=agent:nodejs /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder --chown=agent:nodejs /app/langgraph.json ./
+
+USER agent
+
+EXPOSE 2024
+
+ENV PORT 2024
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["yarn", "workspace", "@openswe/agent", "start"]
