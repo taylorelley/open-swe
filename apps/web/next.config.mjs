@@ -7,7 +7,8 @@ const nextConfig = {
   },
   // Enable standalone output for Docker optimization
   output: 'standalone',
-  // Allow iframe embedding and CORS for development
+  // Restrict iframe embedding to same-origin for clickjacking protection
+  async headers() {
   async headers() {
     return [
       {
