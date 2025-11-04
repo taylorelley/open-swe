@@ -154,7 +154,7 @@ cleanup() {
     print_status "Cleaning up Docker resources..."
     $DOCKER_COMPOSE_CMD down --remove-orphans --volumes
     $DOCKER_COMPOSE_CMD -f docker-compose.dev.yml down --remove-orphans --volumes
-    docker system prune -f
+    print_warning "To clean up unused Docker resources system-wide, run: docker system prune"
     print_success "Cleanup completed"
 }
 
