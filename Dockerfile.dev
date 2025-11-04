@@ -1,0 +1,70 @@
+# Development Dockerfile for Open SWE (all services)
+FROM node:20-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    python3 \
+    py3-pip \
+    build-base \
+    libc6-compat \
+    bash \
+    curl
+
+# Install process manager for running multiple services
+RUN npm install -g pm2
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+COPY .yarnrc.yml ./
+COPY .yarn ./.yarn
+
+# Copy all package.json files
+COPY apps/web/package.json ./apps/web/
+COPY apps/open-swe/package.json ./apps/open-swe/
+COPY apps/open-swe-v2/package.json ./apps/open-swe-v2/
+COPY apps/cli/package.json ./apps/cli/
+COPY apps/docs/package.json ./apps/docs/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies
+RUN yarn install
+
+# Copy source code
+COPY . .
+
+# Build shared package
+RUN yarn workspace @openswe/shared build
+
+# Create PM2 ecosystem file
+RUN echo 'module.exports = {\n\
+  apps: [\n\
+    {\n\
+      name: "web",\n\
+      script: "yarn",\n\
+      args: "workspace @openswe/web dev",\n\
+      cwd: "/app",\n\
+      env: {\n\
+        PORT: 3000,\n\
+        NODE_ENV: "development"\n\
+      }\n\
+    },\n\
+    {\n\
+      name: "agent",\n\
+      script: "yarn",\n\
+      args: "workspace @openswe/agent dev",\n\
+      cwd: "/app",\n\
+      env: {\n\
+        PORT: 2024,\n\
+        NODE_ENV: "development"\n\
+      }\n\
+    }\n\
+  ]\n\
+};' > ecosystem.config.js
+
+EXPOSE 3000 2024
+
+# Start both services with PM2
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]

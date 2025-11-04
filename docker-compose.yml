@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Open SWE Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/api
+      - LANGGRAPH_API_URL=http://agent:2024
+    env_file:
+      - ./apps/web/.env
+    depends_on:
+      - agent
+    networks:
+      - openswe-network
+    restart: unless-stopped
+
+  # Open SWE LangGraph Agent
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    ports:
+      - "2024:2024"
+    environment:
+      - NODE_ENV=production
+      - PORT=2024
+      - OPEN_SWE_APP_URL=http://localhost:3000
+    env_file:
+      - ./apps/open-swe/.env
+    networks:
+      - openswe-network
+    restart: unless-stopped
+    volumes:
+      # Mount for persistent data if needed
+      - agent-data:/app/data
+
+  # Optional: Redis for caching (if needed)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - openswe-network
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+networks:
+  openswe-network:
+    driver: bridge
+
+volumes:
+  agent-data:
+  redis-data:
