@@ -19,7 +19,6 @@ WORKDIR /app
 # Copy package files
 COPY package.json yarn.lock ./
 COPY .yarnrc.yml ./
-COPY .yarn ./.yarn
 
 # Copy all package.json files
 COPY apps/web/package.json ./apps/web/

@@ -16,7 +16,6 @@ WORKDIR /app
 # Copy package files
 COPY package.json yarn.lock ./
 COPY .yarnrc.yml ./
-COPY .yarn ./.yarn
 COPY apps/open-swe/package.json ./apps/open-swe/
 COPY packages/shared/package.json ./packages/shared/
 
@@ -27,7 +26,6 @@ RUN yarn install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/.yarn ./.yarn
 COPY . .
 
 # Build the shared package first
