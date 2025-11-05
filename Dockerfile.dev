@@ -11,8 +11,8 @@ RUN apk add --no-cache \
     bash \
     curl
 
-# Install process manager for running multiple services
-RUN npm install -g pm2
+# Enable Corepack and install process manager
+RUN corepack enable && npm install -g pm2
 
 WORKDIR /app
 
@@ -28,7 +28,8 @@ COPY apps/cli/package.json ./apps/cli/
 COPY apps/docs/package.json ./apps/docs/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install dependencies
+# Install dependencies using Corepack-managed Yarn
+RUN corepack prepare yarn@$(node -p "require('./package.json').packageManager.split('@')[1]") --activate
 RUN yarn install
 
 # Copy source code
