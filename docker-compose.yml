@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Open SWE Web Application
   web:
