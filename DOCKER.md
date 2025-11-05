@@ -205,7 +205,18 @@ lsof -i :2024
 - Check file permissions: `chmod 644 apps/*/.env`
 - Verify no trailing spaces in environment values
 
-#### 4. Memory Issues
+#### 4. Yarn Version Mismatch
+If you see errors like "This project's package.json defines packageManager: yarn@3.5.1":
+```bash
+# The Dockerfiles now use Corepack to handle this automatically
+# If you encounter this error, ensure you're using the latest Docker images
+
+# For local development, enable Corepack:
+corepack enable
+corepack prepare yarn@3.5.1 --activate
+```
+
+#### 5. Memory Issues
 ```bash
 # Increase Docker memory limit (Docker Desktop)
 # Or add swap space on Linux systems
