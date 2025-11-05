@@ -216,7 +216,18 @@ corepack enable
 corepack prepare yarn@3.5.1 --activate
 ```
 
-#### 5. Memory Issues
+#### 5. Build Script Failures
+If you encounter errors during `yarn install` related to build scripts:
+```bash
+# The Docker configuration uses --mode skip-build during dependency installation
+# to prevent postinstall scripts from running before source code is available.
+# Build scripts are executed after copying the source code.
+
+# This is handled automatically in the Dockerfiles, but if you see errors like:
+# "turbo build failed" during yarn install, ensure you're using the latest images.
+```
+
+#### 6. Memory Issues
 ```bash
 # Increase Docker memory limit (Docker Desktop)
 # Or add swap space on Linux systems
