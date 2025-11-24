@@ -41,6 +41,11 @@ RUN yarn add --cached
 # Build shared package
 RUN yarn workspace @openswe/shared build
 
+# Verify shared package build output
+RUN echo "Verifying shared package build..." && \
+    ls -la /app/packages/shared/dist/ && \
+    echo "Build verification complete"
+
 # Create PM2 ecosystem file
 RUN cat > ecosystem.config.js <<'EOF'
 module.exports = {
