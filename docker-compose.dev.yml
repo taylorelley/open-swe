@@ -28,6 +28,8 @@ services:
       - /app/apps/web/node_modules
       - /app/apps/open-swe/node_modules
       - /app/packages/shared/node_modules
+      # Exclude built dist directories to preserve compiled output
+      - /app/packages/shared/dist
     networks:
       - openswe-dev-network
     restart: unless-stopped

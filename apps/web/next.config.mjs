@@ -9,7 +9,6 @@ const nextConfig = {
   output: 'standalone',
   // Restrict iframe embedding to same-origin for clickjacking protection
   async headers() {
-  async headers() {
     return [
       {
         source: '/:path*',

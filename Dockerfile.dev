@@ -36,36 +36,43 @@ RUN yarn install --mode skip-build
 COPY . .
 
 # Run postinstall scripts and build after source code is available
-RUN yarn install --prefer-offline
+RUN yarn install
 
 # Build shared package
 RUN yarn workspace @openswe/shared build
 
+# Verify shared package build output
+RUN echo "Verifying shared package build..." && \
+    ls -la /app/packages/shared/dist/ && \
+    echo "Build verification complete"
+
 # Create PM2 ecosystem file
-RUN echo 'module.exports = {\n\
-  apps: [\n\
-    {\n\
-      name: "web",\n\
-      script: "yarn",\n\
-      args: "workspace @openswe/web dev",\n\
-      cwd: "/app",\n\
-      env: {\n\
-        PORT: 3000,\n\
-        NODE_ENV: "development"\n\
-      }\n\
-    },\n\
-    {\n\
-      name: "agent",\n\
-      script: "yarn",\n\
-      args: "workspace @openswe/agent dev",\n\
-      cwd: "/app",\n\
-      env: {\n\
-        PORT: 2024,\n\
-        NODE_ENV: "development"\n\
-      }\n\
-    }\n\
-  ]\n\
-};' > ecosystem.config.js
+RUN cat > ecosystem.config.js <<'EOF'
+module.exports = {
+  apps: [
+    {
+      name: "web",
+      script: "yarn",
+      args: "workspace @openswe/web dev",
+      cwd: "/app",
+      env: {
+        PORT: 3000,
+        NODE_ENV: "development"
+      }
+    },
+    {
+      name: "agent",
+      script: "yarn",
+      args: "workspace @openswe/agent dev",
+      cwd: "/app",
+      env: {
+        PORT: 2024,
+        NODE_ENV: "development"
+      }
+    }
+  ]
+};
+EOF
 
 EXPOSE 3000 2024
 
