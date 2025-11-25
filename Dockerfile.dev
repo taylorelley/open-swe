@@ -36,7 +36,7 @@ RUN yarn install --mode skip-build
 COPY . .
 
 # Run postinstall scripts and build after source code is available
-RUN yarn add --cached
+RUN yarn install
 
 # Build shared package
 RUN yarn workspace @openswe/shared build
